@@ -36,6 +36,10 @@ public class Level {
 	private ArrayList<Enemy> enemiesList = new ArrayList<>();
 	private ArrayList<Flower> flowers = new ArrayList<>();
 
+	private ArrayList<Water> waters = new ArrayList<>();
+	private ArrayList<Gas> GG = new ArrayList<>();
+
+
 	private List<PlayerDieListener> dieListeners = new ArrayList<>();
 	private List<PlayerWinListener> winListeners = new ArrayList<>();
 
@@ -165,6 +169,26 @@ public class Level {
 			if (player.getCollisionMatrix()[PhysicsObject.RIG] instanceof Spikes)
 				onPlayerDeath();
 
+
+
+			//checks for water hitbox with player
+			for(Water w : waters) {
+				if(w.getHitbox().isIntersecting(player.getHitbox())){
+					System.out.println("touching water");
+				}
+
+			}
+			//check for hitbox with gas and player
+			for(Gas p: GG){
+				if(p.getHitbox().isIntersecting(player.getHitbox())){
+					System.out.println("touching gas");
+				}
+			}
+
+
+
+			
+
 			for (int i = 0; i < flowers.size(); i++) {
 				if (flowers.get(i).getHitbox().isIntersecting(player.getHitbox())) {
 					if(flowers.get(i).getType() == 1)
@@ -192,8 +216,16 @@ public class Level {
 			camera.update(tslf);
 		}
 	}
+	// Pre: Called with a column, row, a map object, a positive number of squares to fill,
+//      and an empty or partially-filled list to track gas placed this round.
+//      The map must be initialized with valid tile bounds and tileSize, and tileset must be accessible.
+
+// Post: Adds a Gas tile at the given position and continues spreading gas outward
+//       in multiple directions (up, diagonal, sides, down) until numSquaresToFill is 0
+//       or no more valid adjacent tiles are available.
 	private void addGas(int col, int row, Map map, int numSquaresToFill, ArrayList<Gas> placedThisRound) {
     Gas g = new Gas(col, row, tileSize, tileset.getImage("GasOne"), this, 0);
+	GG.add(g);
     map.addTile(col, row, g);
     placedThisRound.add(g);
     numSquaresToFill--; 
@@ -310,9 +342,20 @@ public class Level {
 	//Your code goes here! 
 	//Please make sure you read the rubric/directions carefully and implement the solution recursively!
 	
+	// Pre: Called with a column, row, a map object, and a fullness level (0–3).
+//      The map must be initialized and contain a grid of Tile objects. 
+//      tileSize and tileset must be accessible .
+
+// Post: Adds a Water tile at the given position if possible.
+//       Attempts to flow water downwards first; if blocked, flows left and right
+//       depending on remaining fullness. Prevents replacing existing water or solid tiles.
+
 
 private void water(int col, int row, Map map, int fullness) {
     // Check bounds
+
+
+
     if (col < 0 || col >= map.getTiles().length || row < 0 || row >= map.getTiles()[0].length) return;
 
     Tile currentTile = map.getTiles()[col][row];
@@ -327,30 +370,36 @@ private void water(int col, int row, Map map, int fullness) {
 
     // Create and add water tile
     Water w = new Water(col, row, tileSize, tileset.getImage(imageName), this, fullness);
+	waters.add(w);
     map.addTile(col, row, w);
 
     // Try to flow down
     if (row + 1 < map.getTiles()[0].length) {
         Tile below = map.getTiles()[col][row + 1];
+		Tile TBellow = map.getTiles()[col][row+2];
         if (!below.isSolid() && !(below instanceof Water)) {
+			if(TBellow.isSolid()){      //consider the block two below you
+				water(col, row+1, map,3);
+				return; //same as bottom
+			}
             water(col, row + 1, map, 0); // Falling water
             return; // Stop sideways flow if we can go down
         }
     }
+	else{
+		return;
+	}
 
     // Sideways flow only if fullness > 0
-    if (fullness > 0) {
+   
         // Right
         if (col + 1 < map.getTiles().length 
             && !(map.getTiles()[col + 1][row] instanceof Water)
             && !map.getTiles()[col + 1][row].isSolid()) {
 
             // Check for air under
-            if (row + 1 < map.getTiles()[0].length && !map.getTiles()[col + 1][row + 1].isSolid()) {
-                water(col + 1, row + 1, map, 0);
-            } else {
                 water(col + 1, row, map, Math.max(1, fullness - 1));
-            }
+            
         }
 
         // Left
@@ -358,13 +407,11 @@ private void water(int col, int row, Map map, int fullness) {
             && !(map.getTiles()[col - 1][row] instanceof Water)
             && !map.getTiles()[col - 1][row].isSolid()) {
 
-            if (row + 1 < map.getTiles()[0].length && !map.getTiles()[col - 1][row + 1].isSolid()) {
-                water(col - 1, row + 1, map, 0);
-            } else {
+           
                 water(col - 1, row, map, Math.max(1, fullness - 1));
-            }
+            
         }
-    }
+    
 }
 
 
