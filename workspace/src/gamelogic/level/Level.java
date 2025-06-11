@@ -65,7 +65,8 @@ public class Level {
 	public LevelData getLevelData(){
 		return leveldata;
 	}
-
+//pre:no tiles must exisit
+//post: makes an arraylist of all water and gas and door objects and also add them all into the game.
 	public void restartLevel() {
 
 		int[][] values = mapdata.getValues();
@@ -210,7 +211,8 @@ public class Level {
 
 
 			//checks for water hitbox with player
-			
+			//before: check if player is touching water or gas, and update speed or start gas timer
+			// after: updated player speed and gas status based on collisions
 				 boolean fast =false;
 				 
 			for(Water w : waters) {
@@ -234,11 +236,6 @@ public class Level {
 				}
 				
 			}
-			
-
-			
-				
-				
 			
 
 		if (inGas) {

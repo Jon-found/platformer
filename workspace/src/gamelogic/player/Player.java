@@ -52,6 +52,8 @@ public void showTimer(long secondsInGas) {
     this.gasTimer = (int) secondsInGas;
 }
 
+//before:gas timer must be more than 0 secounds 
+//after: set text above players head when in gas of how long they have been in gas in red text 
 
 	@Override
 	public void draw(Graphics g) {

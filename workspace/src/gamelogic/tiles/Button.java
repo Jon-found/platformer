@@ -11,18 +11,21 @@ public class Button extends Tile {
 
     private boolean pressed = false;
     private ArrayList<Tile> doors;
-//loop though the arraylist and set the doors to opposite 
+// Before: image must not be null, and level must be set.
+    // After: makes a button at the given spot that is not solid.
     public Button(float x, float y, int size, BufferedImage image, Level level) {
         super(x, y, size, image, false, level);
         hitbox = new RectHitbox(x*size, y*size, 0, 0, size, size); 
         this.doors = null;
         
     }
-
+// Before: doors should be a list of tiles (usually door tiles).
+    // After: sets this button’s door list to that list.
     public void setDoors(ArrayList<Tile> doors){
         this.doors = doors;
     }
-
+  // Before: button should not already be pressed.
+    // After: switches each door’s image and collision, and marks button as pressed.
     @Override
     public void update(float tslf) {
         if (hitbox != null && level.getPlayer().getHitbox().isIntersecting(hitbox)) {
