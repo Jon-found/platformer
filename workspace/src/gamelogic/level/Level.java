@@ -20,6 +20,7 @@ import gamelogic.tiles.SolidTile;
 import gamelogic.tiles.Spikes;
 import gamelogic.tiles.Tile;
 import gamelogic.tiles.Water;
+import gamelogic.tiles.Button;
 
 public class Level {
 
@@ -32,12 +33,14 @@ public class Level {
 	private boolean active;
 	private boolean playerDead;
 	private boolean playerWin;
+	public long gasEnterTime = -1;
 
 	private ArrayList<Enemy> enemiesList = new ArrayList<>();
 	private ArrayList<Flower> flowers = new ArrayList<>();
 
 	private ArrayList<Water> waters = new ArrayList<>();
 	private ArrayList<Gas> GG = new ArrayList<>();
+	
 
 
 	private List<PlayerDieListener> dieListeners = new ArrayList<>();
@@ -64,14 +67,19 @@ public class Level {
 	}
 
 	public void restartLevel() {
+
 		int[][] values = mapdata.getValues();
 		Tile[][] tiles = new Tile[width][height];
+		GG = new ArrayList();
+		waters = new ArrayList();
+		ArrayList<Tile> doorTiles = new ArrayList<>();
+		Button savedButton = null;
 
 		for (int x = 0; x < width; x++) {
 			int xPosition = x;
 			for (int y = 0; y < height; y++) {
 				int yPosition = y;
-
+				//add an arraylist of doors 
 				tileset = GameResources.tileset;
 
 				tiles[x][y] = new Tile(xPosition, yPosition, tileSize, null, false, this);
@@ -120,9 +128,24 @@ public class Level {
 					tiles[x][y] = new Water(xPosition, yPosition, tileSize, tileset.getImage("Full_water"), this, 3);
 				else if (values[x][y] == 20)
 					tiles[x][y] = new Water(xPosition, yPosition, tileSize, tileset.getImage("Half_water"), this, 2);
-				else if (values[x][y] == 21)
+				else if (values[x][y] == 21){
 					tiles[x][y] = new Water(xPosition, yPosition, tileSize, tileset.getImage("Quarter_water"), this, 1);
+				}else if (values[x][y] == 22){//change solidTile
+					tiles[x][y] = new Tile(xPosition, yPosition, tileSize, tileset.getImage("doorC"),true, this);
+				 doorTiles.add(tiles[x][y]);
+				 tiles[x][y].makeSolid();
+				}else if (values[x][y] == 23){//change solidTile
+					 savedButton = new Button(xPosition, yPosition, tileSize, tileset.getImage("but"), this);
+    					tiles[x][y] = savedButton;
+				}else if (values[x][y] == 24){//change solidTile
+					tiles[x][y] = new Tile(xPosition, yPosition, tileSize, tileset.getImage("doorO"), false,this);
+					 doorTiles.add(tiles[x][y]);
+				}
 			}
+			if (savedButton != null) {
+    savedButton.setDoors(doorTiles);
+}
+
 
 		}
 		enemies = new Enemy[enemiesList.size()];
@@ -152,7 +175,11 @@ public class Level {
 		throwPlayerWinEvent();
 	}
 
+	
+	
+	
 	public void update(float tslf) {
+	
 		if (active) {
 			// Update the player
 			player.update(tslf);
@@ -171,23 +198,67 @@ public class Level {
 
 
 
+			
+			
+			
+
+			
+
+
+
+
+
+
 			//checks for water hitbox with player
+			
+				 boolean fast =false;
+				 
 			for(Water w : waters) {
 				if(w.getHitbox().isIntersecting(player.getHitbox())){
-					System.out.println("touching water");
+					
+					player.walkSpeed=700;
+					  fast =true;
 				}
-
 			}
+			if(fast==false){
+			
+			player.walkSpeed=400;
+			}
+			boolean inGas=false;
 			//check for hitbox with gas and player
 			for(Gas p: GG){
 				if(p.getHitbox().isIntersecting(player.getHitbox())){
-					System.out.println("touching gas");
+					inGas=true;
+					        
+					player.showTimer((System.currentTimeMillis()-gasEnterTime)/1000);
 				}
+				
 			}
-
-
+			
 
 			
+				
+				
+			
+
+		if (inGas) {
+   			 if (gasEnterTime == -1) {
+       			 gasEnterTime = System.currentTimeMillis();
+    		}
+ 			   player.showTimer((System.currentTimeMillis() - gasEnterTime) / 1000);
+    			if ((System.currentTimeMillis() - gasEnterTime) > 5000) {
+       		 onPlayerDeath();
+   				 }
+			} else {
+   			 gasEnterTime = -1;
+			}			
+
+
+
+
+
+
+
 
 			for (int i = 0; i < flowers.size(); i++) {
 				if (flowers.get(i).getHitbox().isIntersecting(player.getHitbox())) {
@@ -374,7 +445,12 @@ private void water(int col, int row, Map map, int fullness) {
     map.addTile(col, row, w);
 
     // Try to flow down
-    if (row + 1 < map.getTiles()[0].length) {
+
+
+	//added the and statemnt!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
+	
+
+    if (row + 1 < map.getTiles()[0].length && row + 2 < map.getTiles()[0].length ) {
         Tile below = map.getTiles()[col][row + 1];
 		Tile TBellow = map.getTiles()[col][row+2];
         if (!below.isSolid() && !(below instanceof Water)) {

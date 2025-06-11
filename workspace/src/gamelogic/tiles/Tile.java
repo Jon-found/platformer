@@ -29,7 +29,16 @@ public class Tile{
 
 	}
 	public void update (float tslf) {};
+
+	public void makeSolid(){
+		solid = true;
+		hitbox = new RectHitbox(position.x, position.y, 0, 0, size, size);
+	}
 	
+	public void makeNotSolid(){
+		solid = false;
+		hitbox = null;
+	}
 	public void draw (Graphics g) {
 		if(image != null) g.drawImage(image, (int)position.x, (int)position.y, size, size, null);
 		
@@ -39,6 +48,8 @@ public class Tile{
 	
 	
 	//------------------------------------Getters
+	
+
 	public boolean isSolid() {
 		return solid;
 	}

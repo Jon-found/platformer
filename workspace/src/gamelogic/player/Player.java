@@ -1,6 +1,7 @@
 package gamelogic.player;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 import gameengine.PhysicsObject;
@@ -13,7 +14,8 @@ import gamelogic.tiles.Tile;
 public class Player extends PhysicsObject{
 	public float walkSpeed = 400;
 	public float jumpPower = 1350;
-
+	private int gasTimer=0;
+	
 	private boolean isJumping = false;
 
 	public Player(float x, float y, Level level) {
@@ -43,10 +45,24 @@ public class Player extends PhysicsObject{
 		if(collisionMatrix[BOT] != null) isJumping = false;
 	}
 
+
+
+
+public void showTimer(long secondsInGas) {
+    this.gasTimer = (int) secondsInGas;
+}
+
+
 	@Override
 	public void draw(Graphics g) {
 		g.setColor(Color.YELLOW);
 		MyGraphics.fillRectWithOutline(g, (int)getX(), (int)getY(), width, height);
+		
+		if (gasTimer > 0) {
+			g.setColor(Color.RED);
+			g.setFont(new Font("Arial", Font.BOLD, 20));
+			g.drawString("Gas: " + gasTimer + "s", (int)getX(), (int)getY() - 10);
+		}
 		
 		if(Main.DEBUGGING) {
 			for (int i = 0; i < closestMatrix.length; i++) {
